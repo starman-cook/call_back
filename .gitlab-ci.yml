@@ -1,0 +1,86 @@
+image: node:14
+
+workflow:
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: "$CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS"
+      when: never
+    - if: "$CI_COMMIT_BRANCH"
+
+stages:
+  - build
+  - deploy
+
+build development:
+  stage: build
+  tags: ["smtprelay2.run-1"]
+  variables:
+    API_URL: "https://dev.volsor.com/api/"
+  before_script:
+    - npm install
+  script:
+    - npm run build
+  cache:
+    key: $CI_COMMIT_REF_SLUG
+    paths:
+      - node_modules/
+    policy: pull
+  artifacts:
+    when: on_success
+    paths:
+      - ./public/call_back.js
+  rules:
+    - if: "$CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH"
+
+deploy development:
+  stage: deploy
+  tags: ["smtprelay2.run-1"]
+  before_script:
+    - eval $(ssh-agent -s)
+    - echo "$WEB_SERVER_CI_KEY" | tr -d '\r' | ssh-add -
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - ssh-keyscan -p $WEB_SERVER_PORT $WEB_SERVER_IP >> ~/.ssh/known_hosts
+    - chmod 644 ~/.ssh/known_hosts
+  script:
+    - cd public && tar -c call_back.js | ssh -p $WEB_SERVER_PORT $WEB_SERVER_LOGIN@$WEB_SERVER_IP "tar xvf - -C /var/www/ftp/cdn/call_back/dev"
+  rules:
+    - if: "$CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH"
+      when: manual
+
+build production:
+  stage: build
+  tags: ["smtprelay2.run-1"]
+  variables:
+    API_URL: "https://api.volsor.com/"
+  before_script:
+    - npm install
+  script:
+    - npm run build
+  cache:
+    key: $CI_COMMIT_REF_SLUG
+    paths:
+      - node_modules/
+    policy: pull
+  artifacts:
+    when: on_success
+    paths:
+      - ./public/call_back.js
+  rules:
+    - if: "$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH"
+
+deploy production:
+  stage: deploy
+  tags: ["smtprelay2.run-1"]
+  before_script:
+    - eval $(ssh-agent -s)
+    - echo "$WEB_SERVER_CI_KEY" | tr -d '\r' | ssh-add -
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - ssh-keyscan -p $WEB_SERVER_PORT $WEB_SERVER_IP >> ~/.ssh/known_hosts
+    - chmod 644 ~/.ssh/known_hosts
+  script:
+    - cd public && tar -c call_back.js | ssh -p $WEB_SERVER_PORT $WEB_SERVER_LOGIN@$WEB_SERVER_IP "tar xvf - -C /var/www/ftp/cdn/call_back"
+  rules:
+    - if: "$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH"
+      when: manual

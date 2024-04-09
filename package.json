@@ -1,0 +1,33 @@
+{
+  "name": "call_back",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "webpack-dev-server",
+    "build": "webpack",
+    "test": "mocha --require ts-node/register -r mock-local-storage -r jsdom-global/register --watch-extensions ts 'test/**/*.ts'"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/chai": "^4.3.3",
+    "@types/mocha": "^9.1.1",
+    "@types/node": "^18.7.1",
+    "chai": "^4.3.6",
+    "jsdom": "20.0.0",
+    "jsdom-global": "3.0.2",
+    "mocha": "^10.0.0",
+    "mock-local-storage": "^1.1.23",
+    "ts-loader": "^9.3.1",
+    "ts-node": "^10.9.1",
+    "typescript": "^4.7.4",
+    "webpack": "^5.74.0",
+    "webpack-cli": "^4.10.0",
+    "webpack-dev-server": "^4.9.3"
+  },
+  "dependencies": {
+    "axios": "^0.27.2",
+    "dotenv": "^16.0.1"
+  }
+}
