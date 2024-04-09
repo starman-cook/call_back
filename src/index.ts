@@ -2,6 +2,7 @@ import { apiUrl } from "./constants/ApiUrl";
 import { version } from "../package.json";
 import ILanguage from "./interfaces/ILanguage";
 import IParams from "./interfaces/IParams";
+import axios from "axios";
 
 /**
  * class CallBack, init it with custom or default styles
@@ -232,6 +233,18 @@ export class CallBack {
     this.btn.addEventListener("touch", this.pressButtonHandler);
     this.btn.addEventListener("dblclick", (e: MouseEvent) => {
       e.preventDefault();
+    });
+    this.form.addEventListener("submit", async (e: any) => {
+      e.preventDefault();
+      try {
+        await axios.post("/wp-admin/admin-ajax.php", {
+          action: "call_request",
+          phone: this.input.value,
+        });
+        console.log(this.input.value);
+      } catch (err) {
+        console.log(err);
+      }
     });
   };
 
