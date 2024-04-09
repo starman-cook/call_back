@@ -192,7 +192,6 @@ export class CallBack {
           background: "transparent",
           //   borderRadius: "5px",
           fontSize: "30px",
-          //   margin: "10px auto 20px",
         },
         params.inputStyle || {}
       )
