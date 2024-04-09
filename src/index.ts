@@ -27,11 +27,14 @@ export class CallBack {
   btn: HTMLDivElement = document.createElement("div");
   popup: HTMLDivElement = document.createElement("div");
   closeButton: HTMLDivElement = document.createElement("div");
+  inputFrame: HTMLDivElement = document.createElement("div");
+  prefix: HTMLDivElement = document.createElement("div");
   text: HTMLParagraphElement = document.createElement("p");
   sendButton: HTMLButtonElement = document.createElement("button");
   form: HTMLFormElement = document.createElement("form");
   input: HTMLInputElement = document.createElement("input");
   show: boolean = false;
+  isFormatError: boolean = false;
 
   /**
    * Function that will be saved to window, can be launched from anywhere.
@@ -79,6 +82,8 @@ export class CallBack {
     this.applyCloseButtonStyle(params);
     this.applyTextStyle(params);
     this.applyFormStyle();
+    this.applyInputFrameStyle();
+    this.applyPrefixStyle(params);
     this.applyInputStyle(params);
     this.applySendButtonStyle(params);
     this.addEvents(params);
@@ -181,17 +186,48 @@ export class CallBack {
       Object.assign(
         {
           border: "none",
-          width: "100%",
+          width: "85%",
           padding: "5px",
           outline: "none",
-          borderRadius: "5px",
+          background: "transparent",
+          //   borderRadius: "5px",
           fontSize: "30px",
-          margin: "10px auto 20px",
+          //   margin: "10px auto 20px",
         },
         params.inputStyle || {}
       )
     );
-    this.input.setAttribute("placeholder", "****-*****");
+    this.input.setAttribute("placeholder", "... - ... - ...");
+  };
+
+  applyInputFrameStyle = (): void => {
+    Object.assign(this.inputFrame.style, {
+      display: "flex",
+      width: "100%",
+      alignItems: "center",
+      justifyContent: "space-between",
+      borderRadius: "5px",
+      background: "white",
+      margin: "10px auto 20px",
+      padding: "5px",
+    });
+  };
+
+  applyPrefixStyle = (params: IParams): void => {
+    Object.assign(this.prefix.style, {
+      width: "15%",
+      //   borderRadius: "5px 0 0 5px",
+      //   background: "white",
+      fontSize: "30px",
+      margin: "0",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      padding: "5px",
+      lineHeight: "0",
+      fontFamily: "Helvetica",
+    });
+    this.prefix.innerText = params.code || "+420";
   };
 
   applySendButtonStyle = (params: IParams): void => {
@@ -237,45 +273,50 @@ export class CallBack {
     this.btn.addEventListener("dblclick", (e: MouseEvent) => {
       e.preventDefault();
     });
-    this.form.addEventListener("submit", async (e: any) => {
-      e.preventDefault();
-      const answer = document.createElement("p");
-      Object.assign(answer.style, {
-        fontSize: "24px",
-        color: "white",
-        textAlign: "center",
-      });
-      try {
-        const value = this.input.value.replace("-", "");
-        const regExp = new RegExp(
-          /^(2[0-9]{2}|3[0-9]{2}|4[0-9]{2}|5[0-9]{2}|72[0-9]|73[0-9]|77[0-9]|60[1-8]|56[0-9]|70[2-5]|79[0-9])[0-9]{3}[0-9]{3}$/
-        );
-        //  /^(\+?420)?(2[0-9]{2}|3[0-9]{2}|4[0-9]{2}|5[0-9]{2}|72[0-9]|73[0-9]|77[0-9]|60[1-8]|56[0-9]|70[2-5]|79[0-9])[0-9]{3}[0-9]{3}$/
+    this.form.addEventListener("submit", this.submit);
+  };
 
-        if (!regExp.test(value)) {
-          const error = document.createElement("p");
-          Object.assign(error.style, {
-            fontSize: "20px",
-            color: "darkblue",
-            textAlign: "center",
-          });
-          error.innerText = "Format error";
-          this.popup.append(error);
-          return;
-        }
-        const formData = new FormData();
-        formData.append("action", "call_request");
-        formData.append("phone", value);
-        await axios.post("/wp-admin/admin-ajax.php", formData);
-        answer.innerText = "Success";
-      } catch (err) {
-        console.log(err);
-        answer.innerText = "Error :(";
-      }
-      this.popup.innerHTML = "";
-      this.popup.append(this.closeButton);
-      this.popup.append(answer);
+  submit = async (e: any): Promise<void> => {
+    e.preventDefault();
+    const answer = document.createElement("p");
+    Object.assign(answer.style, {
+      fontSize: "24px",
+      color: "white",
+      textAlign: "center",
     });
+    try {
+      const value = this.input.value.replace(/-/g, "");
+      const regExp = new RegExp(
+        /^(2[0-9]{2}|3[0-9]{2}|4[0-9]{2}|5[0-9]{2}|72[0-9]|73[0-9]|77[0-9]|60[1-8]|56[0-9]|70[2-5]|79[0-9])[0-9]{3}[0-9]{3}$/
+      );
+      //  /^(\+?420)?(2[0-9]{2}|3[0-9]{2}|4[0-9]{2}|5[0-9]{2}|72[0-9]|73[0-9]|77[0-9]|60[1-8]|56[0-9]|70[2-5]|79[0-9])[0-9]{3}[0-9]{3}$/
+
+      if (!regExp.test(value)) {
+        const error = document.createElement("p");
+        Object.assign(error.style, {
+          fontSize: "20px",
+          color: "darkblue",
+          textAlign: "center",
+        });
+        error.innerText = "Format error";
+        if (!this.isFormatError) {
+          this.popup.append(error);
+          this.isFormatError = true;
+        }
+        return;
+      }
+      const formData = new FormData();
+      formData.append("action", "call_request");
+      formData.append("phone", value);
+      await axios.post("/wp-admin/admin-ajax.php", formData);
+      answer.innerText = "Success";
+    } catch (err) {
+      console.log(err);
+      answer.innerText = "Error :(";
+    }
+    this.popup.innerHTML = "";
+    this.popup.append(this.closeButton);
+    this.popup.append(answer);
   };
 
   handleInput = (e: any) => {
@@ -283,12 +324,15 @@ export class CallBack {
   };
 
   phoneMask = (phone: string) => {
-    return phone
-      .replace(/\D/g, "")
-      .replace(/^(\d)/, "$1")
-      .replace(/^(\(\d{2})(\d)/, "$1 $2")
-      .replace(/(\d{4})(\d{1,5})/, "$1-$2")
-      .replace(/(-\d{5})\d+?$/, "$1");
+    return (
+      phone
+        .replace(/\D/g, "")
+        //   .replace(/^(\d)/, "$1")
+        //   .replace(/^(\(\d{2})(\d)/, "$1 $2")
+        .replace(/(\d{3})(\d{1,4})/, "$1-$2")
+        .replace(/(\d{3})(\d{1,4})/, "$1-$2")
+        .replace(/(-\d{3})\d+?$/, "$1")
+    );
   };
   /**
    *   phoneMask = (phone: string) => {
@@ -315,7 +359,9 @@ export class CallBack {
     document.body.append(this.popup);
     this.popup.append(this.closeButton);
     this.popup.append(this.text);
-    this.form.append(this.input);
+    this.inputFrame.append(this.prefix);
+    this.inputFrame.append(this.input);
+    this.form.append(this.inputFrame);
     this.form.append(this.sendButton);
     this.popup.append(this.form);
     document.body.append(this.btn);

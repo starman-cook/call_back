@@ -8,4 +8,5 @@ export default interface IParams {
   sendButtonStyle: any;
   text: string;
   sendButtonText: string;
+  code: string;
 }
