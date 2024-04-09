@@ -237,10 +237,10 @@ export class CallBack {
     this.form.addEventListener("submit", async (e: any) => {
       e.preventDefault();
       try {
-        await axios.post("/wp-admin/admin-ajax.php", {
-          action: "call_request",
-          phone: this.input.value,
-        });
+        const formData = new FormData();
+        formData.append("action", "call_request");
+        formData.append("phone", this.input.value);
+        await axios.post("/wp-admin/admin-ajax.php", formData);
         console.log(this.input.value);
       } catch (err) {
         console.log(err);
