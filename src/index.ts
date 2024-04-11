@@ -130,7 +130,7 @@ export class CallBack {
           background: " #009EE2",
           position: "fixed",
           bottom: "60px",
-          right: "60px",
+          right: window.screen.width < 700 ? "0" : "60px",
           borderRadius: "5px",
           display: this.show ? "block" : "none",
           boxSizing: "border-box",
@@ -226,7 +226,7 @@ export class CallBack {
       lineHeight: "0",
       fontFamily: "Helvetica",
     });
-    this.prefix.innerText = params.code || "+420";
+    this.prefix.innerText = params.code || "+420 ";
   };
 
   applySendButtonStyle = (params: IParams): void => {
