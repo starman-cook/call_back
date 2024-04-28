@@ -4,9 +4,11 @@ export default interface IParams {
   popupStyle: any;
   hoverButtonStyle: any;
   textStyle: any;
+  subTextStyle: any;
   inputStyle: any;
   sendButtonStyle: any;
   text: string;
+  subText: string;
   sendButtonText: string;
   code: string;
 }
