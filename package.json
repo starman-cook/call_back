@@ -1,5 +1,5 @@
 {
-  "name": "call_back",
+  "name": "starman-cook_call_back",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -7,6 +7,10 @@
     "dev": "webpack-dev-server",
     "build": "webpack",
     "test": "mocha --require ts-node/register -r mock-local-storage -r jsdom-global/register --watch-extensions ts 'test/**/*.ts'"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/starman-cook/call_back.git"
   },
   "author": "",
   "license": "ISC",

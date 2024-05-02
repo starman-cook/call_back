@@ -1,5 +1,5 @@
-import { apiUrl } from "./constants/ApiUrl";
-import { version } from "../package.json";
+// import { apiUrl } from "./constants/ApiUrl";
+// import { version } from "../package.json";
 import ILanguage from "./interfaces/ILanguage";
 import IParams from "./interfaces/IParams";
 import axios from "axios";
