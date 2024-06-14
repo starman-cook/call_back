@@ -4,6 +4,41 @@ import ILanguage from "./interfaces/ILanguage";
 import IParams from "./interfaces/IParams";
 import axios from "axios";
 
+const options = [
+  {
+      label: 'Žádost o úvěr',
+      value: 'BrokerfinSjednej',
+  },
+  {
+      label: 'Pojištění auta',
+      value: 'Sjednej-Pojisteni',
+  },
+  {
+      label: 'Pojištění majetku',
+      value: 'home_insurance-sjednej',
+  },
+  {
+      label: 'Životní pojištění',
+      value: 'life_insurance-sjednej',
+  },
+  {
+      label: 'Pojištění domácích mazlíčků',
+      value: 'pet_insurance',
+  },
+  {
+      label: 'Energie',
+      value: 'Energie_sjednej',
+  },
+  {
+      label: 'Cestovní pojištění',
+      value: 'travel_insurance-sjednej',
+  },
+  {
+      label: 'jiný požadavek',
+      value: 'sjednej_web',
+  },
+];
+
 /**
  * class CallBack, init it with custom or default styles
  */
@@ -27,20 +62,30 @@ export class CallBack {
   btn: HTMLDivElement = document.createElement("div");
   popup: HTMLDivElement = document.createElement("div");
   closeButton: HTMLDivElement = document.createElement("div");
-  inputFrame: HTMLDivElement = document.createElement("div");
   prefix: HTMLDivElement = document.createElement("div");
   text: HTMLParagraphElement = document.createElement("p");
   subText: HTMLParagraphElement = document.createElement("p");
   errorText: HTMLParagraphElement = document.createElement("p");
+  errorText2: HTMLParagraphElement = document.createElement("p");
   sendButton: HTMLButtonElement = document.createElement("button");
   form: HTMLFormElement = document.createElement("form");
+  outerInputFrame: HTMLDivElement = document.createElement("div");
+  outerSelectFrame: HTMLDivElement = document.createElement("div");
+  selectFrame: HTMLDivElement = document.createElement("div");
+  inputFrame: HTMLDivElement = document.createElement("div");
   input: HTMLInputElement = document.createElement("input");
+  select: HTMLSelectElement = document.createElement("select");
   show: boolean = false;
+  answer = document.createElement("p");
 
   /**
    * Function that will be saved to window, can be launched from anywhere.
    */
   init = async (params: IParams): Promise<void> => {
+    this.errorText.innerText = '';
+    this.errorText2.innerText = '';
+    this.answer.innerText = '';
+    this.createOptions()
     const html: HTMLElement | null = document.querySelector("html");
     const lang: string | null | undefined =
       params.lang || html?.getAttribute("lang");
@@ -50,6 +95,7 @@ export class CallBack {
       this.renderCallBack(params);
     }
   };
+
 
   /**
    * Function to wait for the HTML element
@@ -85,12 +131,34 @@ export class CallBack {
     this.applySubTextStyle(params);
     this.applyFormStyle();
     this.applyInputFrameStyle();
+    this.applySelectFrameStyle();
     this.applyPrefixStyle(params);
     this.applyInputStyle(params);
+    this.applySelectStyle(params);
     this.applySendButtonStyle(params);
     this.addEvents(params);
     this.appendAll();
   };
+
+  
+  createOptions = () => {
+    this.select.innerHTML = ''
+    const defaultOption = document.createElement('option')
+    defaultOption.innerText = 'Vyberte, s čím vám můžeme pomoci'
+    defaultOption.setAttribute('value', '')
+    defaultOption.setAttribute('disabled', 'true')
+    defaultOption.setAttribute('selected', 'true')
+    defaultOption.style.color = 'grey'
+
+    this.select.append(defaultOption)
+    for (let i = 0; i < options.length; i++) {
+      const option = document.createElement('option')
+      option.style.color = 'black'
+      option.innerText = options[i].label
+      option.setAttribute('value', options[i].value)
+      this.select.append(option)
+    }
+  }
 
   applyButtonStyle = (params: IParams): void => {
     Object.assign(
@@ -230,10 +298,50 @@ export class CallBack {
     );
     this.input.setAttribute("placeholder", "___ - ___ - ___");
     this.input.setAttribute("class", "CallBackButton_input");
+    this.input.setAttribute("name", "phone");
+  };
+
+  applySelectStyle = (params: IParams): void => {
+    Object.assign(
+      this.select.style,
+      Object.assign(
+        {
+          border: "none",
+          width: "100%",
+          // padding: "5px",
+          outline: "none",
+          color: "rgba(0, 0, 0, 0.40)",
+          background: "transparent",
+          //   borderRadius: "5px",
+          // fontSize: window.screen.width < 500 ? "22px" : "26px",
+          fontSize: "19px",
+          fontWeight: "600",
+        },
+        params.inputStyle || {}
+      )
+    );
+    this.select.setAttribute("placeholder", "Vyberte, s čím vám můžeme pomoci")
+    this.select.setAttribute("class", "CallBackButton_input");
+    this.select.setAttribute("name", "product");
   };
 
   applyInputFrameStyle = (): void => {
     Object.assign(this.inputFrame.style, {
+      display: "flex",
+      width: "100%",
+      alignItems: "center",
+      justifyContent: "space-between",
+      borderRadius: "9px",
+      border: `1px solid #E6E6E6`,
+      background: "white",
+      marginBottom: "20px",
+      padding: "13px 20px",
+      boxSizing: "border-box",
+    });
+  };
+
+  applySelectFrameStyle = (): void => {
+    Object.assign(this.selectFrame.style, {
       display: "flex",
       width: "100%",
       alignItems: "center",
@@ -314,8 +422,8 @@ export class CallBack {
 
   submit = async (e: any): Promise<void> => {
     e.preventDefault();
-    const answer = document.createElement("p");
-    Object.assign(answer.style, {
+    
+    Object.assign(this.answer.style, {
       fontSize: "40px",
       color: "#009EE2",
       textAlign: "center",
@@ -325,12 +433,13 @@ export class CallBack {
       marginBottom: "20px",
     });
     try {
+      let isError: boolean = false
       const value = this.input.value.replace(/-/g, "");
       const regExp = new RegExp(
         /^(2[0-9]{2}|3[0-9]{2}|4[0-9]{2}|5[0-9]{2}|72[0-9]|73[0-9]|77[0-9]|60[1-8]|56[0-9]|70[2-5]|79[0-9])[0-9]{3}[0-9]{3}$/
       );
       //  /^(\+?420)?(2[0-9]{2}|3[0-9]{2}|4[0-9]{2}|5[0-9]{2}|72[0-9]|73[0-9]|77[0-9]|60[1-8]|56[0-9]|70[2-5]|79[0-9])[0-9]{3}[0-9]{3}$/
-
+      console.log(this.select.value)
       if (!regExp.test(value)) {
         Object.assign(this.errorText.style, {
           display: "block",
@@ -347,20 +456,50 @@ export class CallBack {
           border: "1px solid #CA150C",
         });
         this.errorText.innerText = "Chyba formátu";
-        return;
+        isError = true;
+      } else {
+        Object.assign(this.inputFrame.style, {
+          border: "1px solid #E6E6E6",
+        });
+        this.errorText.innerText = "";
       }
+      
+      if (!this.select.value) {
+        Object.assign(this.errorText2.style, {
+          display: "block",
+          fontSize: "19px",
+          color: "#CA150C",
+          fontWeight: "700",
+          marginBottom: "20px",
+          marginTop: "0",
+          fontFamily: "Gilroy, Helvetica, sans-serif",
+          textAlign: "left",
+          alignSelf: "flex-start",
+        });
+        Object.assign(this.selectFrame.style, {
+          border: "1px solid #CA150C",
+        });
+        this.errorText2.innerText = "Povinné";
+        isError = true;
+      } else {
+        Object.assign(this.selectFrame.style, {
+          border: "1px solid #E6E6E6",
+        });
+        this.errorText2.innerText = "";
+      }
+      if (isError) return
       const formData = new FormData();
       formData.append("action", "call_request");
       formData.append("phone", value);
       await axios.post("/wp-admin/admin-ajax.php", formData);
-      answer.innerHTML = "Děkujeme, </br>brzy se vám ozveme";
+      this.answer.innerHTML = "Děkujeme, </br>brzy se vám ozveme";
     } catch (err) {
       console.log(err);
-      answer.innerText = "Error :(";
+      this.answer.innerText = "Error :(";
     }
     this.popup.innerHTML = "";
     this.popup.append(this.closeButton);
-    this.popup.append(answer);
+    this.popup.append(this.answer);
   };
 
   handleInput = (e: any) => {
@@ -397,20 +536,30 @@ export class CallBack {
     Object.assign(this.popup.style, {
       display: this.show ? "block" : "none",
     });
+    if (!this.show) {
+      this.init({})
+    }
   };
 
   appendAll = (): void => {
     const style = document.createElement("style");
     style.innerText =
       ".CallBackButton_input::placeholder {color: rgba(0, 0, 0, 0.40);opacity: 1;}";
+    this.outerInputFrame.style.width = '100%'
+    this.outerSelectFrame.style.width = '100%'
     document.body.append(this.popup);
     this.popup.append(this.closeButton);
     this.popup.append(this.text);
     this.popup.append(this.subText);
     this.inputFrame.append(this.prefix);
     this.inputFrame.append(this.input);
-    this.form.append(this.inputFrame);
-    this.form.append(this.errorText);
+    this.selectFrame.append(this.select);
+    this.outerSelectFrame.append(this.selectFrame)
+    this.outerSelectFrame.append(this.errorText2)
+    this.outerInputFrame.append(this.inputFrame)
+    this.outerInputFrame.append(this.errorText);
+    this.form.append(this.outerInputFrame);
+    this.form.append(this.outerSelectFrame);
     this.form.append(this.sendButton);
     this.popup.append(this.form);
     document.body.append(this.btn);
