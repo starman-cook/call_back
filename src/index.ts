@@ -67,6 +67,7 @@ export class CallBack {
   subText: HTMLParagraphElement = document.createElement("p");
   errorText: HTMLParagraphElement = document.createElement("p");
   errorText2: HTMLParagraphElement = document.createElement("p");
+  errorText3: HTMLParagraphElement = document.createElement("p");
   sendButton: HTMLButtonElement = document.createElement("button");
   form: HTMLFormElement = document.createElement("form");
   outerInputFrame: HTMLDivElement = document.createElement("div");
@@ -77,7 +78,11 @@ export class CallBack {
   select: HTMLSelectElement = document.createElement("select");
   show: boolean = false;
   answer = document.createElement("p");
-
+  outerCheckboxFrame = document.createElement("div");
+  checkboxFrame: HTMLLabelElement = document.createElement("label");
+  checkbox: HTMLInputElement = document.createElement("input");
+  checkboxText = document.createElement("p");
+  
   /**
    * Function that will be saved to window, can be launched from anywhere.
    */
@@ -132,9 +137,12 @@ export class CallBack {
     this.applyFormStyle();
     this.applyInputFrameStyle();
     this.applySelectFrameStyle();
+    this.applyCheckboxFrameStyle();
+    this.applyCheckboxTextStyle();
     this.applyPrefixStyle(params);
     this.applyInputStyle(params);
     this.applySelectStyle(params);
+    this.applyCheckboxStyle();
     this.applySendButtonStyle(params);
     this.addEvents(params);
     this.appendAll();
@@ -355,6 +363,49 @@ export class CallBack {
     });
   };
 
+  applyCheckboxFrameStyle = (): void => {
+    Object.assign(this.checkboxFrame.style, {
+      display: "flex",
+      width: "25px",
+      height: '25px',
+      minWidth: '25px',
+      minHeight: '25px',
+      marginRight: '7px',
+      alignItems: "center",
+      justifyContent: "center",
+      borderRadius: "9px",
+      border: `1px solid #E6E6E6`,
+      background: "white",
+      boxSizing: "border-box",
+    });
+    this.checkboxFrame.addEventListener('change', (e: any) => {
+      if (e.target && e.target.checked) {
+        this.checkboxFrame.style.background = '#009EE2'
+      } else {
+        this.checkboxFrame.style.background = 'white'
+      }
+    })
+  };
+
+  applyCheckboxTextStyle = (): void => {
+    Object.assign(this.checkboxText.style, {
+      color: 'black',
+      margin: "0",
+      fontFamily: "Gilroy, Helvetica, sans-serif",
+      fontWeight: "600",
+      fontSize: '14px'
+    });
+    this.checkboxText.innerHTML = `Beru na vědomí informace o zpracování <a style='color: black' target='_blank' href="https://sjednej.cz/informace-o-zpracovani-osobnich-udaju">osobních údajů</a>.`
+  };
+  applyCheckboxStyle = (): void => {
+    Object.assign(this.checkbox.style, {
+      display: 'none',
+    });
+    this.checkbox.setAttribute('id', 'Call_back_button_checkbox')
+    this.checkbox.setAttribute('type', 'checkbox')
+  };
+  
+
   applyPrefixStyle = (params: IParams): void => {
     Object.assign(this.prefix.style, {
       fontSize: "19px",
@@ -434,12 +485,34 @@ export class CallBack {
     });
     try {
       let isError: boolean = false
+      if (!this.checkbox.checked) {
+        Object.assign(this.errorText3.style, {
+          display: "block",
+          fontSize: "19px",
+          color: "#CA150C",
+          fontWeight: "700",
+          marginBottom: "20px",
+          marginTop: "0",
+          fontFamily: "Gilroy, Helvetica, sans-serif",
+          textAlign: "left",
+          alignSelf: "flex-start",
+        });
+        Object.assign(this.checkboxFrame.style, {
+          border: "1px solid #CA150C",
+        });
+        this.errorText3.innerText = "Povinné";
+        isError = true
+      } else {
+        Object.assign(this.checkboxFrame.style, {
+          border: "1px solid #E6E6E6",
+        });
+        this.errorText3.innerText = "";
+      }
       const value = this.input.value.replace(/-/g, "");
       const regExp = new RegExp(
         /^(2[0-9]{2}|3[0-9]{2}|4[0-9]{2}|5[0-9]{2}|72[0-9]|73[0-9]|77[0-9]|60[1-8]|56[0-9]|70[2-5]|79[0-9])[0-9]{3}[0-9]{3}$/
       );
       //  /^(\+?420)?(2[0-9]{2}|3[0-9]{2}|4[0-9]{2}|5[0-9]{2}|72[0-9]|73[0-9]|77[0-9]|60[1-8]|56[0-9]|70[2-5]|79[0-9])[0-9]{3}[0-9]{3}$/
-      console.log(this.select.value)
       if (!regExp.test(value)) {
         Object.assign(this.errorText.style, {
           display: "block",
@@ -547,6 +620,10 @@ export class CallBack {
       ".CallBackButton_input::placeholder {color: rgba(0, 0, 0, 0.40);opacity: 1;}";
     this.outerInputFrame.style.width = '100%'
     this.outerSelectFrame.style.width = '100%'
+    this.outerCheckboxFrame.style.width = '100%'
+    this.outerCheckboxFrame.style.display = 'flex'
+    this.outerCheckboxFrame.style.alignItems = 'center'
+    this.outerCheckboxFrame.style.marginBottom = '20px'
     document.body.append(this.popup);
     this.popup.append(this.closeButton);
     this.popup.append(this.text);
@@ -558,8 +635,16 @@ export class CallBack {
     this.outerSelectFrame.append(this.errorText2)
     this.outerInputFrame.append(this.inputFrame)
     this.outerInputFrame.append(this.errorText);
+
+    this.checkboxFrame.append(this.checkbox)
+    this.outerCheckboxFrame.append(this.checkboxFrame);
+    this.outerCheckboxFrame.append(this.checkboxText);
+
     this.form.append(this.outerInputFrame);
     this.form.append(this.outerSelectFrame);
+    this.form.append(this.outerCheckboxFrame);
+    this.form.append(this.errorText3);
+
     this.form.append(this.sendButton);
     this.popup.append(this.form);
     document.body.append(this.btn);
