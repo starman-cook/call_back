@@ -395,7 +395,7 @@ export class CallBack {
       fontWeight: "600",
       fontSize: '14px'
     });
-    this.checkboxText.innerHTML = `Beru na vědomí informace o zpracování <a style='color: black' target='_blank' href="https://sjednej.cz/informace-o-zpracovani-osobnich-udaju">osobních údajů</a>.`
+    this.checkboxText.innerHTML = `Beru na vědomí informace o zpracování <a style='color: black; text-decoration: underline' target='_blank' href="https://sjednej.cz/informace-o-zpracovani-osobnich-udaju">osobních údajů</a>.`
   };
   applyCheckboxStyle = (): void => {
     Object.assign(this.checkbox.style, {
